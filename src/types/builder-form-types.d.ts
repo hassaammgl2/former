@@ -13,20 +13,26 @@ declare global {
         label: string
         value: string
     }
-
+    interface FieldConfigs {
+        label: string
+        value: string | number | boolean
+    }
     interface Field {
         id: string
         type: FieldType
         label: string
         placeholder?: string
+        helperText?: string
         required: boolean
         options?: FieldOption[]
+        config?: FieldConfigs[]
     }
 
     interface FormMeta {
         id: string
         title: string
         description?: string
+        version: string
     }
 
     interface FormBuilderState {
@@ -43,13 +49,13 @@ declare global {
 
         // // Actions
         addField: (type: FieldType) => void
-        // updateField: (id: string, data: Partial<Field>) => void
-        // deleteField: (id: string) => void
+        updateField: (id: string, data: Partial<Field>) => void
+        deleteField: (id: string) => void
         // reorderFields: (from: number, to: number) => void
-        // selectField: (id: string | null) => void
+        selectField: (id: string | null) => void
 
         // addOption: (fieldId: string) => void
-        // updateOption: (fieldId: string, optionId: string, data: Partial<FieldOption>) => void
+        updateOption: (fieldId: string, optionId: string, data: Partial<FieldOption>) => void
         // deleteOption: (fieldId: string, optionId: string) => void
 
         // undo: () => void

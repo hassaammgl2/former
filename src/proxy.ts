@@ -4,7 +4,8 @@ import { NextRequest } from "next/server";
 // import { auth } from "@/services/better-auth/auth";
 
 export async function proxy(_: NextRequest) {
-    console.log(_)
+    console.log(_);
+
     //     const session = await auth.api.getSession({
     //         headers: await headers()
     //     })

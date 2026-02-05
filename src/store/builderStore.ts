@@ -6,11 +6,12 @@ const initialMeta: FormMeta = {
     id: nanoid(),
     title: "Untitled Form",
     description: "Write your description here",
+    version: "1"
 }
 
 export const useBuilderStore = create<FormBuilderState>()(
     // immer((set, get) => ({
-    immer((set) => ({
+    immer((set,) => ({
         meta: initialMeta,
         fields: [],
         selectedFieldId: null,
@@ -18,16 +19,6 @@ export const useBuilderStore = create<FormBuilderState>()(
         // history: [],
         // historyIndex: -1,
 
-        // _pushHistory: () => {
-        //     const { fields, history, historyIndex } = get()
-        //     const snapshot = JSON.parse(JSON.stringify(fields))
-
-        //     set((state) => {
-        //         state.history = history.slice(0, historyIndex + 1)
-        //         state.history.push(snapshot)
-        //         state.historyIndex++
-        //     })
-        // },
 
         addField: (type) => {
             set((state) => {
@@ -36,31 +27,26 @@ export const useBuilderStore = create<FormBuilderState>()(
                     type,
                     label: "New Field",
                     required: false,
+                    helperText: "",
                     options: type === "select" || type === "radio" ? [] : undefined,
+                    config: type === "text" ? [{
+                        label: "Min",
+                        value: 0
+                    }, { label: "Max", value: 200 }] : undefined
                 }
                 state.fields.push(field)
                 state.isDirty = true
             })
-            // ; (get() as any)._pushHistory()
         },
 
-        // updateField: (id, data) => {
-        //     set((state) => {
-        //         const field = state.fields.find((f) => f.id === id)
-        //         if (field) Object.assign(field, data)
-        //         state.isDirty = true
-        //     })
-        //         ; (get() as any)._pushHistory()
-        // },
+        updateField: (id, data) => {
 
-        // deleteField: (id) => {
-        //     set((state) => {
-        //         state.fields = state.fields.filter((f) => f.id !== id)
-        //         if (state.selectedFieldId === id) state.selectedFieldId = null
-        //         state.isDirty = true
-        //     })
-        //         ; (get() as any)._pushHistory()
-        // },
+            console.log(id, data);
+        },
+
+        deleteField: (id) => {
+            console.log(id);
+        },
 
         // reorderFields: (from, to) => {
         //     set((state) => {
@@ -71,11 +57,11 @@ export const useBuilderStore = create<FormBuilderState>()(
         //         ; (get() as any)._pushHistory()
         // },
 
-        // selectField: (id) => {
-        //     set((state) => {
-        //         state.selectedFieldId = id
-        //     })
-        // },
+        selectField: (id) => {
+            set((state) => {
+                state.selectedFieldId = id
+            })
+        },
 
         // addOption: (fieldId) => {
         //     set((state) => {
@@ -91,16 +77,16 @@ export const useBuilderStore = create<FormBuilderState>()(
         //         ; (get() as any)._pushHistory()
         // },
 
-        // updateOption: (fieldId, optionId, data) => {
-        //     set((state) => {
-        //         const field = state.fields.find((f) => f.id === fieldId)
-        //         if (!field?.options) return
-        //         const opt = field.options.find((o) => o.id === optionId)
-        //         if (opt) Object.assign(opt, data)
-        //         state.isDirty = true
-        //     })
-        //         ; (get() as any)._pushHistory()
-        // },
+        updateOption: (fieldId, optionId, data) => {
+            set((state) => {
+                const field = state.fields.find((f) => f.id === fieldId)
+                if (!field?.options) return
+                const opt = field.options.find((o) => o.id === optionId)
+                if (opt) Object.assign(opt, data)
+                state.isDirty = true
+            })
+            // ; (get() as any)._pushHistory()
+        },
 
         // deleteOption: (fieldId, optionId) => {
         //     set((state) => {

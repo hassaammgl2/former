@@ -19,7 +19,7 @@ const widths = {
   desktop: "w-[1024px]",
 };
 
-type DeviceType = "mobile" | "desktop"
+type DeviceType = "mobile" | "desktop";
 
 export default function FormCanvas() {
   const [device, setDevice] = useState<DeviceType>("desktop");
@@ -42,9 +42,8 @@ export default function FormCanvas() {
 
       {/* Preview Canvas */}
       <ScrollArea className="flex justify-center items-center bg-muted p-6 rounded-xl">
-        {device}
         <div
-          className={`${widths[device]} bg-white rounded-xl shadow border transition-all`}
+          className={`${widths[device]} mx-auto bg-white rounded-xl shadow border transition-all`}
         >
           <Card className="border-0 shadow-none">
             <CardHeader>
@@ -53,7 +52,7 @@ export default function FormCanvas() {
             </CardHeader>
             <CardContent className="flex flex-col gap-2">
               {fields.map((i) => (
-                <FieldFactory key={i.id} type={i.type} />
+                <FieldFactory key={i.id} field={i} />
               ))}
             </CardContent>
           </Card>

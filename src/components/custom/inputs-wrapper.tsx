@@ -1,86 +1,43 @@
 import React from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import { MoreVertical } from "lucide-react";
 import { Label } from "../ui/label";
-import { Input } from "../ui/input";
-import { Switch } from "../ui/switch";
-import { Separator } from "../ui/separator";
+import { useBuilderStore } from "@/store/builderStore";
+import { cn } from "@/lib/utils";
 
 const InputsWrapper = ({
   children,
-  type,
-  labelText,
+  data,
+  configs,
 }: {
   children: React.ReactNode;
-  type: FieldType;
-  labelText: string;
+  data: Field;
+  configs: React.ReactNode;
 }) => {
+  const { selectField, selectedFieldId } = useBuilderStore();
   return (
     <Sheet>
-      <div className="rounded-md border p-4 dark:hover:border-white hover:border-black">
-        <Label className="mb-2 font-medium">
-          {labelText} <span className="text-red-500 font-extrabold">*</span>{" "}
+      <div
+        onClick={() => selectField(data.id)}
+        className={cn(
+          "rounded-md border p-4 dark:hover:border-white hover:border-black",
+          data.id === selectedFieldId
+            ? "border-2  dark:border-white border-black"
+            : "",
+        )}
+      >
+        <Label className="mb-2 text-md">
+          {data.label}
+          {data.required && (
+            <span className="text-red-500 font-extrabold">*</span>
+          )}
           <SheetTrigger>
             <MoreVertical className="size-4" />
           </SheetTrigger>
         </Label>
         {children}
+        {configs}
       </div>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>
-            Edit {`${type.substring(0, 1).toUpperCase()}${type.slice(1)}`}
-          </SheetTitle>
-          <SheetDescription>
-            Edit Configs of Your{" "}
-            {`${type.substring(0, 1).toUpperCase()}${type.slice(1)}`} Element.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="px-4 text-white/87">
-          <Label className="mb-2">Edit your label here</Label>
-          <Input />
-        </div>
-        <div className="px-4 text-white/87">
-          <Label className="mb-2">Helper Text</Label>
-          <Input />
-        </div>
-        <div className="px-4 text-white/87">
-          <Label className="mb-2">Placeholder Text</Label>
-          <Input />
-        </div>
-        <Separator className="px-4" />
-        <SheetTitle className="px-4 text-white/87">
-          <h3>Validations</h3>
-        </SheetTitle>
-        <div className="px-4 text-white/87 flex justify-between">
-          <Label className="mb-2">Required </Label>
-          <Switch />
-        </div>
-        <div className="flex">
-          <div className="px-4 text-white/87 flex justify-between">
-            <Label className="mb-2">
-              Min
-              <pre className="text-[10px] font-extralight">(opt*)</pre>{" "}
-            </Label>
-            <Input type="number" />
-          </div>
-          <Separator orientation="vertical" />
-          <div className="px-4 text-white/87 flex justify-between">
-            <Label className="mb-2">
-              Max
-              <pre className="text-[10px] font-extralight">(opt*)</pre>{" "}
-            </Label>
-            <Input type="number" />
-          </div>
-        </div>
-      </SheetContent>
     </Sheet>
   );
 };
