@@ -32,7 +32,7 @@ declare global {
     label: string;
     value: string;
   }
-  
+
   interface FieldConfigs {
     label: string;
     value: string | number | boolean;
@@ -64,7 +64,7 @@ declare global {
 
     selectedFieldId: string | null;
     isDirty: boolean;
-    setIsDirty: () => void;
+    setIsDirty: (value: boolean) => void;
     history: Field[][];
     historyIndex: number;
     updateHistory: () => void;

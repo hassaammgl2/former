@@ -22,7 +22,9 @@ export const useBuilderStore = create<FormBuilderState>()(
     isDirty: false,
     history: [],
     historyIndex: -1,
-
+    setIsDirty: (value) => {
+      set({ isDirty: value });
+    },
     updateHistory: () => {
       const { fields, history, historyIndex } = get();
       const snapshot = structuredClone(fields);

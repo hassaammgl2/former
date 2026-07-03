@@ -42,6 +42,7 @@ const Header = () => {
     historyIndex,
     status,
     fields,
+    setIsDirty,
   } = useBuilderStore();
 
   async function poll(jobId: string) {
@@ -51,12 +52,14 @@ const Header = () => {
       if (data.status === "COMPLETED") {
         toast.success("Form saved successfully.");
         setIsSaving(false);
+        setIsDirty(false);
         return;
       }
 
       if (data.status === "FAILED") {
         toast.error(data.error ?? "Failed to save form.");
         setIsSaving(false);
+        setIsDirty(false);
         return;
       }
 
@@ -71,6 +74,7 @@ const Header = () => {
       }
 
       setIsSaving(false);
+      setIsDirty(false);
     }
   }
 
@@ -88,7 +92,7 @@ const Header = () => {
         fields: fields,
       };
       try {
-        const { data: response } = await axios.post("/api/save", {
+        const { data: response } = await axios.post("/api/forms/save", {
           ...data,
         });
 
@@ -100,6 +104,7 @@ const Header = () => {
 
         console.log("Job created:", bgJobId);
         poll(bgJobId);
+        setIsDirty(true);
       } catch (error) {
         if (axios.isAxiosError(error)) {
           console.error("Axios Error:", error.response?.data ?? error.message);
@@ -117,8 +122,8 @@ const Header = () => {
       }
     } catch (error) {
       console.log(error);
-      // toast.error(error?.message as string);
       setIsSaving(false);
+      setIsDirty(false);
     }
   };
 
