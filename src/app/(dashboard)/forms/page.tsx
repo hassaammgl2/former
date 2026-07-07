@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Plus,
@@ -32,18 +32,38 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import Link from "next/link";
+import axios from "axios";
+import { useSession } from "@/services/better-auth/auth-client";
+import { useRouter } from "next/navigation";
+import moment from "moment";
 
 interface Form {
   id: string;
+  ownerId: string;
   name: string;
+  description: string;
   status: "draft" | "published" | "archived";
   createdAt: string;
   updatedAt: string;
   submissionsCount: number;
+  isPublic: boolean;
+  isArchived: boolean;
+  versions: [];
+  submissions: [];
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    emailVerified: boolean;
+    image: null | string;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 export default function FormsPage() {
-  const [forms, setforms] = useState<Form[]>([]);
+  const router = useRouter();
+  const [forms, setForms] = useState<Form[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const filteredForms = forms.filter((form) => {
@@ -54,29 +74,48 @@ export default function FormsPage() {
       statusFilter === "all" || form?.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+  const { data: sessionData, error: sessionError } = useSession();
+  if (sessionError) {
+    router.push("/sign-in");
+  }
 
-  const getStatusBadge = (status: Form["status"]) => {
-    const variants: Record<
-      Form["status"],
-      { label: string; className: string }
-    > = {
-      draft: { label: "Draft", className: "bg-muted text-muted-foreground" },
-      published: {
-        label: "Published",
-        className: "bg-success/10 text-success",
-      },
-      archived: {
-        label: "Archived",
-        className: "bg-muted text-muted-foreground opacity-60",
-      },
-    };
-    const { label, className } = variants[status];
-    return (
-      <Badge variant="secondary" className={className}>
-        {label}
-      </Badge>
-    );
-  };
+  useEffect(() => {
+    if (!sessionData?.user?.id) return;
+
+    axios
+      .get(`/api/forms/${sessionData.user.id}`)
+      .then((res) => {
+        console.log(res.data);
+        toast.success(res.data.message);
+        setForms(res.data.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, [sessionData]);
+
+  // const getStatusBadge = (status: Form["status"]) => {
+  //   const variants: Record<
+  //     Form["status"],
+  //     { label: string; className: string }
+  //   > = {
+  //     draft: { label: "Draft", className: "bg-muted text-muted-foreground" },
+  //     published: {
+  //       label: "Published",
+  //       className: "bg-success/10 text-success",
+  //     },
+  //     archived: {
+  //       label: "Archived",
+  //       className: "bg-muted text-muted-foreground opacity-60",
+  //     },
+  //   };
+  //   const { label, className } = variants[status];
+  //   return (
+  //     <Badge variant="secondary" className={className}>
+  //       {label}
+  //     </Badge>
+  //   );
+  // };
 
   const handleDuplicate = (id: string) => {
     toast.success("Form duplicated");
@@ -93,7 +132,7 @@ export default function FormsPage() {
   return (
     <div>
       {/* Filters */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 mb-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -116,6 +155,7 @@ export default function FormsPage() {
           </SelectContent>
         </Select>
       </div>
+
       {/* Forms list */}
       {filteredForms.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border p-12 text-center">
@@ -153,12 +193,15 @@ export default function FormsPage() {
                     {form.name}
                   </Link>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Updated {form.updatedAt}
+                    Created {moment(form.createdAt).fromNow()}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Updated {moment(form.updatedAt).fromNow()}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                {getStatusBadge(form.status)}
+                {/* {getStatusBadge(form.status)} */}
                 <span className="text-sm text-muted-foreground tabular-nums w-24 text-right">
                   {form.submissionsCount} submissions
                 </span>

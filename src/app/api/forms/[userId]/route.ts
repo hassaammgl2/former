@@ -1,11 +1,15 @@
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/services/prisma/prisma";
 
-export async function GET(request: NextRequest) {
-  const body = await request.json();
+export async function GET(
+  _: NextRequest,
+  { params }: { params: Promise<{ userId: string }> },
+) {
+  const { userId } = await params;
+
   const forms = await prisma.form.findMany({
     where: {
-      ownerId: body.userId,
+      ownerId: userId,
     },
     include: {
       versions: {
@@ -26,10 +30,10 @@ export async function GET(request: NextRequest) {
       user: true,
     },
   });
-  console.log(forms);
 
   return NextResponse.json({
     success: true,
-    status: "Saving form ...",
+    message: "Fetched all forms",
+    data: forms,
   });
 }
