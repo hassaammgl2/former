@@ -6,7 +6,7 @@ import { getFieldCategory } from "@/lib/get-field-category";
 
 const initialMeta: FormMeta = {
   id: nanoid(),
-  title: "Untitled Form",
+  title: `Untitled Form ${Date.now()}`,
   description: "Write your description here",
   version: 1,
 };

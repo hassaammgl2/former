@@ -17,7 +17,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body>
-        <Toaster position="bottom-center" />
+        <Toaster position="bottom-center" closeButton richColors />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

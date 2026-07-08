@@ -11,7 +11,6 @@ import {
 import { useEffect, useState } from "react";
 
 import {
-  Plus,
   Search,
   Filter,
   MoreHorizontal,
@@ -42,7 +41,6 @@ interface Form {
   ownerId: string;
   name: string;
   description: string;
-  status: "draft" | "published" | "archived";
   createdAt: string;
   updatedAt: string;
   submissionsCount: number;
@@ -66,14 +64,14 @@ export default function FormsPage() {
   const [forms, setForms] = useState<Form[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const filteredForms = forms.filter((form) => {
-    const matchesSearch = form?.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || form?.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // const filteredForms = forms.filter((form) => {
+  //   const matchesSearch = form?.name
+  //     .toLowerCase()
+  //     .includes(searchQuery.toLowerCase());
+  //   const matchesStatus =
+  //     statusFilter === "all" || form?.status === statusFilter;
+  //   return matchesSearch && matchesStatus;
+  // });
   const { data: sessionData, error: sessionError } = useSession();
   if (sessionError) {
     router.push("/sign-in");
@@ -94,51 +92,76 @@ export default function FormsPage() {
       });
   }, [sessionData]);
 
-  // const getStatusBadge = (status: Form["status"]) => {
-  //   const variants: Record<
-  //     Form["status"],
-  //     { label: string; className: string }
-  //   > = {
-  //     draft: { label: "Draft", className: "bg-muted text-muted-foreground" },
-  //     published: {
-  //       label: "Published",
-  //       className: "bg-success/10 text-success",
-  //     },
-  //     archived: {
-  //       label: "Archived",
-  //       className: "bg-muted text-muted-foreground opacity-60",
-  //     },
-  //   };
-  //   const { label, className } = variants[status];
-  //   return (
-  //     <Badge variant="secondary" className={className}>
-  //       {label}
-  //     </Badge>
-  //   );
-  // };
+  const getStatusBadge = (form: Form) => {
+    if (form.isPublic) {
+      return {
+        label: "Published",
+        className: "bg-green-100 text-green-700",
+      };
+    }
+    if (form.isArchived) {
+      return {
+        label: "Archived",
+        className: "bg-red-100 text-red-700",
+      };
+    }
 
-  const handleDuplicate = (id: string) => {
-    toast.success("Form duplicated");
+    return {
+      label: "Draft",
+      className: "bg-gray-100 text-gray-700",
+    };
   };
 
-  const handleDelete = (id: string) => {
-    toast.success("Form deleted");
+  const handleDuplicate = (id: string) => {
+    toast.success(`Form duplicated ${id}`);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      if (!sessionData?.user?.id) {
+        toast.error("You must be logged in.");
+        return;
+      }
+
+      const res = await axios.delete("/api/forms/delete", {
+        data: {
+          userId: sessionData.user.id,
+          formId: id,
+        },
+      });
+
+      if (res.data.success) {
+        setForms((prev) => prev.filter((form) => form.id !== id));
+        toast.success(res.data.message);
+      } else {
+        toast.error(res.data.message || "Failed to delete form.");
+      }
+    } catch (error: unknown) {
+      console.error(error);
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message || "Something went wrong.");
+      } else {
+        toast.error("Something went wrong.");
+      }
+    }
   };
 
   const handleArchive = (id: string) => {
+    console.log(id);
+
     toast.success("Form archived");
   };
 
   return (
-    <div>
+    <div className="w-full px-4">
       {/* Filters */}
       <div className="flex items-center gap-3 mb-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search forms..."
-            // value={searchQuery}
-            // onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
           />
         </div>
@@ -157,7 +180,7 @@ export default function FormsPage() {
       </div>
 
       {/* Forms list */}
-      {filteredForms.length === 0 ? (
+      {forms.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border p-12 text-center">
           <p className="text-muted-foreground">No forms found</p>
           {searchQuery || statusFilter !== "all" ? (
@@ -179,7 +202,7 @@ export default function FormsPage() {
         </div>
       ) : (
         <div className="rounded-lg border border-border divide-y divide-border">
-          {filteredForms.map((form) => (
+          {forms.map((form) => (
             <div
               key={form.id}
               className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
@@ -193,15 +216,18 @@ export default function FormsPage() {
                     {form.name}
                   </Link>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Created {moment(form.createdAt).fromNow()}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Updated {moment(form.updatedAt).fromNow()}
+                    Created {moment(form.createdAt).fromNow()} | Updated{" "}
+                    {moment(form.updatedAt).fromNow()}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                {/* {getStatusBadge(form.status)} */}
+                <Badge
+                  variant="secondary"
+                  className={getStatusBadge(form).className}
+                >
+                  {getStatusBadge(form).label}
+                </Badge>
                 <span className="text-sm text-muted-foreground tabular-nums w-24 text-right">
                   {form.submissionsCount} submissions
                 </span>
@@ -221,7 +247,7 @@ export default function FormsPage() {
                         Edit
                       </Link>
                     </DropdownMenuItem>
-                    {form.status === "published" && (
+                    {form.isPublic && (
                       <DropdownMenuItem className="flex items-center gap-2">
                         <ExternalLink className="h-4 w-4" />
                         View live
@@ -234,7 +260,7 @@ export default function FormsPage() {
                       <Copy className="h-4 w-4" />
                       Duplicate
                     </DropdownMenuItem>
-                    {form.status !== "archived" && (
+                    {form.isArchived && (
                       <DropdownMenuItem
                         onClick={() => handleArchive(form.id)}
                         className="flex items-center gap-2"

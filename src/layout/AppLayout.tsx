@@ -10,7 +10,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
 import { links } from "@/constants";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession, signOut } from "@/services/better-auth/auth-client";
@@ -35,12 +34,7 @@ export const AppLayout = ({ children }: { children?: React.ReactNode }) => {
     router.push("/sign-in");
   }
   return (
-    <div
-      className={cn(
-        "mx-auto flex w-full max-w-7xl flex-1 flex-col overflow-hidden rounded-md border border-neutral-200 bg-gray-100 md:flex-row dark:border-neutral-700 dark:bg-neutral-800",
-        "h-screen",
-      )}
-    >
+    <div className="flex h-screen w-full overflow-hidden bg-background">
       {/* Sidebar */}
       <Sidebar>
         <SidebarHeader className="flex justify-center">
@@ -90,9 +84,9 @@ export const AppLayout = ({ children }: { children?: React.ReactNode }) => {
       </Sidebar>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col overflow-scroll">
         <TopBar />
-        <div className="p-8 max-w-7xl mx-auto w-full">{children}</div>
+        <div className="mx-auto w-full">{children}</div>
       </main>
     </div>
   );
